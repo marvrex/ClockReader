@@ -1,0 +1,33 @@
+﻿Der Buildvorgang wurde am 04.12.2015 15:28:05 gestartet.
+     1>Projekt "H:\clockreader\clockreader\OpenCV1\OpenCV1.vcxproj" auf Knoten "2", build Ziel(e).
+     1>InitializeBuildStatus:
+         "Debug\OpenCV1.unsuccessfulbuild" wird erstellt, da "AlwaysCreate" angegeben wurde.
+       ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\CL.exe /c /IC:\OpenCV243\opencv\build\include /ZI /nologo /W3 /WX- /Od /Oy- /D WIN32 /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"Debug\\" /Fd"Debug\vc100.pdb" /Gd /TP /analyze- /errorReport:prompt main.cpp
+         main.cpp
+     1>h:\clockreader\clockreader\opencv1\main.cpp(61): warning C4018: '<': Konflikt zwischen 'signed' und 'unsigned'
+     1>h:\clockreader\clockreader\opencv1\main.cpp(67): warning C4018: '<': Konflikt zwischen 'signed' und 'unsigned'
+     1>h:\clockreader\clockreader\opencv1\main.cpp(68): warning C4244: 'Argument': Konvertierung von 'double' in 'float', möglicher Datenverlust
+     1>h:\clockreader\clockreader\opencv1\main.cpp(68): warning C4244: 'Argument': Konvertierung von 'double' in 'float', möglicher Datenverlust
+     1>h:\clockreader\clockreader\opencv1\main.cpp(71): warning C4018: '<': Konflikt zwischen 'signed' und 'unsigned'
+     1>h:\clockreader\clockreader\opencv1\main.cpp(80): warning C4018: '<': Konflikt zwischen 'signed' und 'unsigned'
+     1>h:\clockreader\clockreader\opencv1\main.cpp(81): warning C4244: '=': Konvertierung von 'double' in 'float', möglicher Datenverlust
+     1>h:\clockreader\clockreader\opencv1\main.cpp(90): warning C4018: '<': Konflikt zwischen 'signed' und 'unsigned'
+     1>h:\clockreader\clockreader\opencv1\main.cpp(102): warning C4018: '<': Konflikt zwischen 'signed' und 'unsigned'
+     1>h:\clockreader\clockreader\opencv1\main.cpp(151): warning C4018: '<': Konflikt zwischen 'signed' und 'unsigned'
+     1>h:\clockreader\clockreader\opencv1\main.cpp(166): warning C4018: '<': Konflikt zwischen 'signed' und 'unsigned'
+     1>h:\clockreader\clockreader\opencv1\main.cpp(180): warning C4244: 'return': Konvertierung von 'double' in 'float', möglicher Datenverlust
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 10.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"H:\clockreader\clockreader\Debug\OpenCV1.exe" /INCREMENTAL:NO /NOLOGO /LIBPATH:C:\OpenCV243\opencv\build\x86\vc10\lib opencv_core243d.lib opencv_highgui243d.lib opencv_calib3d243d.lib opencv_contrib243d.lib opencv_features2d243d.lib opencv_flann243d.lib opencv_gpu243d.lib opencv_haartraining_engined.lib opencv_imgproc243d.lib opencv_legacy243d.lib opencv_ml243d.lib opencv_nonfree243d.lib opencv_objdetect243d.lib opencv_photo243d.lib opencv_stitching243d.lib opencv_ts243d.lib opencv_video243d.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /ManifestFile:"Debug\OpenCV1.exe.intermediate.manifest" /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /DEBUG /PDB:"H:\clockreader\clockreader\Debug\OpenCV1.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"H:\clockreader\clockreader\Debug\OpenCV1.lib" /MACHINE:X86 Debug\main.obj
+     1>main.obj : warning LNK4075: /EDITANDCONTINUE wird aufgrund der Angabe von /INCREMENTAL:NO ignoriert.
+         OpenCV1.vcxproj -> H:\clockreader\clockreader\Debug\OpenCV1.exe
+       Manifest:
+         C:\Program Files (x86)\Microsoft SDKs\Windows\v7.0A\bin\mt.exe /nologo /verbose /outputresource:"H:\clockreader\clockreader\Debug\OpenCV1.exe;#1" /manifest Debug\OpenCV1.exe.intermediate.manifest
+       FinalizeBuildStatus:
+         Die Datei "Debug\OpenCV1.unsuccessfulbuild" wird gelöscht.
+         Aktualisieren des Timestamps von "Debug\OpenCV1.lastbuildstate".
+     1>Die Erstellung des Projekts "H:\clockreader\clockreader\OpenCV1\OpenCV1.vcxproj" ist abgeschlossen, build Ziel(e).
+
+Das Erstellen war erfolgreich.
+
+Verstrichene Zeit 00:00:02.85
