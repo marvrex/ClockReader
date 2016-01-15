@@ -1,0 +1,5 @@
+cmake_minimum_required(VERSION 2.8)
+project( ClockReader )
+find_package( OpenCV REQUIRED )
+add_executable( ClockReader main.cpp )
+target_link_libraries( ClockReader ${OpenCV_LIBS} )

@@ -27,8 +27,11 @@ int main () {
 		//write capture to img
 		if (capture.isOpened()) 
 			capture>>img;
-		else
-			img = imread("C:\\Users\\abq172\\Desktop\\clock.jpg", CV_LOAD_IMAGE_COLOR);
+		else {
+                    cout << "Error: capture device not available. Trying to load image file." << endl;
+                    flush(cout);
+                    img = imread("clock.jpg", CV_LOAD_IMAGE_COLOR);
+                }
 
 		//extract RGB channels
 		Mat RGB_channel[3];
@@ -47,7 +50,7 @@ int main () {
 		erode(blueImg, blueImg, Mat(), Point(-1,-1), 5, 0, morphologyDefaultBorderValue());
 
 		//find contours on the blue channel
-		vector<vector<Point>> contours;
+		vector<vector<Point> > contours;
 		vector<Vec4i> hierarchy;
 
 		findContours(blueImg, contours, hierarchy, RETR_LIST, CV_CHAIN_APPROX_NONE);
@@ -144,21 +147,21 @@ int main () {
 	return 0;
 }
 
+// sort by area
+struct comparator {
+        inline bool operator() (const pair<float, int>& pair1, const pair<float, int>& pair2) {
+                return pair1.first < pair2.first;
+        }
+};
+
 vector<int> sortContourIndices(vector<float> areas) {
-	vector<pair<float, int>> areaPairs (areas.size());
+	vector<pair<float, int> > areaPairs (areas.size());
 
 	// fill in pairs with values from areas
 	for (int i = 0; i < areas.size(); i++) {
 		areaPairs[i] = make_pair(areas[i], i);
 	}
 
-
-	// sort by area
-	struct comparator {
-		inline bool operator() (const pair<float, int>& pair1, const pair<float, int>& pair2) {
-			return pair1.first < pair2.first;
-		}
-	};
 	sort(areaPairs.begin(), areaPairs.end(), comparator());
 
 	// extract indices
