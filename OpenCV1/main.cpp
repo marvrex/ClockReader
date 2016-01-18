@@ -10,6 +10,18 @@ using namespace cv;
 vector<int> sortContourIndices(vector<float> areas);
 static inline float angleBetweenLinesInRadians(Point2f line1Start, Point2f line1End, Point2f line2Start, Point2f line2End);
 
+void opening(cv::Mat mat)
+{
+	erode(mat, mat, Mat(), Point(-1,-1), 5, 0, morphologyDefaultBorderValue());
+	dilate(mat, mat, Mat(), Point(-1,-1), 5, 0, morphologyDefaultBorderValue());
+}
+
+void closing(cv::Mat mat)
+{
+	dilate(mat, mat, Mat(), Point(-1,-1), 5, 0, morphologyDefaultBorderValue());
+	erode(mat, mat, Mat(), Point(-1,-1), 5, 0, morphologyDefaultBorderValue());
+}
+
 int main () {
 
 	Mat img;
@@ -37,27 +49,33 @@ int main () {
 		else
 			img = picture.clone();
 
-		//extract RGB channels
+		// extract RGB channels
 		Mat RGB_channel[3];
 		split(img, RGB_channel);
 
-		//blue channel
+		// blue channel
 		Mat blueImg = RGB_channel[0];
+		
+		// apply binary threshold
 		threshold(blueImg, blueImg, thresholdBlue, 255, CV_THRESH_BINARY);
 
-		//closing
-		erode(blueImg, blueImg, Mat(), Point(-1,-1), 5, 0, morphologyDefaultBorderValue());
-		dilate(blueImg, blueImg, Mat(), Point(-1,-1), 5, 0, morphologyDefaultBorderValue());
+		// opening
+		opening(blueImg);
 
-		//opening
-		dilate(blueImg, blueImg, Mat(), Point(-1,-1), 5, 0, morphologyDefaultBorderValue());
-		erode(blueImg, blueImg, Mat(), Point(-1,-1), 5, 0, morphologyDefaultBorderValue());
+		// closing
+		closing(blueImg);
+		
+		// show input images
+		imshow("blue", blueImg);
+		imshow("image", img);
 
-		//find contours on the blue channel
+		// find contours on the blue channel
 		vector<vector<Point> > contours;
 		vector<Vec4i> hierarchy;
 
-		findContours(blueImg, contours, hierarchy, RETR_LIST, CV_CHAIN_APPROX_NONE);
+		// CV_RETR_CCOMP -> two-level hierarchy
+		// might need to use CV_RETR_TREE to build a full hierarchy
+		findContours(blueImg, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
 		Mat contoursImg = Mat::zeros(blueImg.size(), CV_8UC3);
 
 		if (contours.size() == 0)
@@ -75,37 +93,61 @@ int main () {
 			masscenter[i] = Point2f( mu[i].m10/mu[i].m00 , mu[i].m01/mu[i].m00 ); 
 		}
 
+		// draw all centers of mass
 		for (int i = 0; i < masscenter.size(); i++) {
 			circle(contoursImg, masscenter[i], 3, Scalar(0, 0, 255), CV_FILLED, 8, 0);
 		}
-
-		imshow("blue", blueImg);
-		imshow("image", img);
 
 		// calculate contour areas
 		vector<float> contourAreas(contours.size());
 		for(int i = 0; i < contours.size(); i++) {
 			contourAreas[i] = contourArea(contours[i]);
-			cout << i << ": " << contourAreas[i] << endl;
 		}
 
-
-		int contourCircle(0), contourTriangle(0), contourHandBig(0), contourHandSmall(0);
-
-		cout << "sorted indices:" << endl;
+		// sort contours by area
 		vector<int> sortedIndices = sortContourIndices(contourAreas);
-		for(int i = 0; i < sortedIndices.size(); i++) {
-			cout << i << ": " << sortedIndices[i] << endl;
+		
+		int contourCircle(-1), contourTriangle(-1), contourHandBig(-1), contourHandSmall(-1);
+		
+		// the biggest contour is the circle -- the background of the clock
+		contourCircle = sortedIndices[sortedIndices.size()-1];
+		// every other contour on the clock has to be a children of this contour
+		// so: find all contours with the circle as their parent
+		vector<int> childContours;
+		for (int i = 0; i < sortedIndices.size()-1; i++) {
+			if (hierarchy[sortedIndices[i]][3] == contourCircle)
+				childContours.push_back(sortedIndices[i]);
 		}
-		cout << endl;
-		if (sortedIndices.size() > 3) {
-			contourCircle = sortedIndices[sortedIndices.size()-1];
-			contourHandBig = sortedIndices[sortedIndices.size()-2];
-			contourHandSmall = sortedIndices[sortedIndices.size()-3];
-			contourTriangle = sortedIndices[sortedIndices.size()-4];
+		
+		// the children are still sorted by size
+		// the two biggest contours are most likely the hands of the clock
+		if (childContours.size() > 0)
+			contourHandBig = childContours[childContours.size()-1];
+		else
+			// there must be at least one (actually two if you count the center?) contours inside
+			cout << "not a clock" << endl;
+		
+		if (childContours.size() > 1)
+			contourHandSmall = childContours[childContours.size()-2];
+		
+		// the contour that is farther from the center of the circle than the big hand of the clock has to be the triangle. If there is no such contour then the big hand shadows the triangle
+		if (childContours.size() > 2) {
+			Point2f centerCircle = masscenter[contourCircle];
+			Point2f centerBig = masscenter[contourHandBig];
+			double distBig = norm(centerCircle - centerBig);
+			for (int i = 0; i < childContours.size()-2; i++) {
+				Point2f center = masscenter[childContours[i]];
+				float dist = norm(center - centerCircle);
+				if (dist > distBig) {
+					contourTriangle = childContours[i];
+				}
+			}
 		}
+		// no contour is farther from the center than the big hand
+		if (contourTriangle == -1)
+			contourTriangle = contourHandBig;
 
-		// draw contours
+		// draw the contours of the clock
 		for (int i= 0; i < contours.size(); i++) {
 			Scalar color(255,0,255);
 			if (i == contourCircle)
@@ -117,7 +159,6 @@ int main () {
 
 			drawContours(contoursImg, contours, i, color, 2, 8, noArray());
 		}
-		
 
 		float angleBigHand = angleBetweenLinesInRadians(
 			masscenter[contourCircle], masscenter[contourTriangle],
@@ -152,10 +193,10 @@ int main () {
 }
 
 // sort by area
-struct comparator {
-        inline bool operator() (const pair<float, int>& pair1, const pair<float, int>& pair2) {
-                return pair1.first < pair2.first;
-        }
+struct comparatorArea {
+	inline bool operator() (const pair<float, int>& pair1, const pair<float, int>& pair2) {
+		return pair1.first < pair2.first;
+	}
 };
 
 vector<int> sortContourIndices(vector<float> areas) {
@@ -166,7 +207,7 @@ vector<int> sortContourIndices(vector<float> areas) {
 		areaPairs[i] = make_pair(areas[i], i);
 	}
 
-	sort(areaPairs.begin(), areaPairs.end(), comparator());
+	sort(areaPairs.begin(), areaPairs.end(), comparatorArea());
 
 	// extract indices
 	vector<int> indices(areaPairs.size());
