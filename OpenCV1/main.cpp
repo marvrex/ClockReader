@@ -13,9 +13,16 @@ static inline float angleBetweenLinesInRadians(Point2f line1Start, Point2f line1
 int main () {
 
 	Mat img;
-
+	Mat picture;
 
 	VideoCapture capture(0);
+	
+	// load image if capture is not available
+	if (!capture.isOpened()) {
+		cout << "Error: capture device not available. Trying to load image file." << endl;
+		flush(cout);
+		picture = imread("../clock1400.jpg", CV_LOAD_IMAGE_COLOR);
+	}
 
 	//blue
 	namedWindow("blue", WINDOW_AUTOSIZE);
@@ -24,14 +31,11 @@ int main () {
 
 	//endless loop
 	for(;;) {
-		//write capture to img
-		if (capture.isOpened()) 
-			capture>>img;
-		else {
-                    cout << "Error: capture device not available. Trying to load image file." << endl;
-                    flush(cout);
-                    img = imread("clock.jpg", CV_LOAD_IMAGE_COLOR);
-                }
+		// load current frame
+		if (capture.isOpened())
+			capture >> img;
+		else
+			img = picture.clone();
 
 		//extract RGB channels
 		Mat RGB_channel[3];
@@ -140,7 +144,7 @@ int main () {
 
 		//break with ESC
 		if (cvWaitKey(1) == 27)
-			imwrite("C:\\Users\\abq172\\Desktop\\clock.jpg", img);
+			break;
 	}
 
 	capture.release();
