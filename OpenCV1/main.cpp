@@ -1,8 +1,7 @@
 #include <iostream>
 #include <opencv2/opencv.hpp>
 
-//if CAMERA is used within the code, replace it with this:
-#define CAMERA
+#define VK_ESCAPE 27
 
 using namespace std;
 using namespace cv;
@@ -22,18 +21,22 @@ void closing(cv::Mat mat)
 	erode(mat, mat, Mat(), Point(-1,-1), 5, 0, morphologyDefaultBorderValue());
 }
 
-int main () {
+int main (int argc, char* argv[]) {
 
 	Mat img;
 	Mat picture;
-
-	VideoCapture capture(0);
+	VideoCapture* capture_p(0);
 	
-	// load image if capture is not available
-	if (!capture.isOpened()) {
-		cout << "Error: capture device not available. Trying to load image file." << endl;
+	if (argc == 1) {
+		capture_p = new VideoCapture(0);
+		if (!capture_p->isOpened()) {
+			cout << "Failed to open video capture device. Don't want to use the video capture? Load an image from a file by using: " << endl << "$ " << (argv[0] == "" ? "ClockReader" : argv[0]) << " <path-to-image-file>" << endl;
+			return 1;
+		}
+	} else {
+		cout << "Loading image from file: " << argv[1] << endl;
 		flush(cout);
-		picture = imread("../clock1400.jpg", CV_LOAD_IMAGE_COLOR);
+		picture = imread(argv[1], CV_LOAD_IMAGE_COLOR);
 	}
 
 	//blue
@@ -44,9 +47,13 @@ int main () {
 	//endless loop
 	for(;;) {
 		// load current frame
-		if (capture.isOpened())
-			capture >> img;
-		else
+		if (capture_p != 0) {
+			 if (!capture_p->isOpened()) {
+				 cout << "Error: capture device not available...";
+				 continue;
+			 } else
+				*capture_p >> img;
+		} else
 			img = picture.clone();
 
 		// extract RGB channels
@@ -78,8 +85,11 @@ int main () {
 		findContours(blueImg, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
 		Mat contoursImg = Mat::zeros(blueImg.size(), CV_8UC3);
 
-		if (contours.size() == 0)
+		if (contours.size() == 0) {
+			if (cvWaitKey(1) == VK_ESCAPE)
+				break;
 			continue;
+		}
 
 		//get image moments
 		vector<Moments> mu(contours.size() );
@@ -164,13 +174,13 @@ int main () {
 			masscenter[contourCircle], masscenter[contourTriangle],
 			masscenter[contourCircle], masscenter[contourHandBig]
 			);
-		cout << "angleBigHand: " << angleBigHand << endl;
+// 		cout << "angleBigHand: " << angleBigHand << endl;
 
 		float angleSmallHand = angleBetweenLinesInRadians(
 			masscenter[contourCircle], masscenter[contourTriangle],
 			masscenter[contourCircle], masscenter[contourHandSmall]
 			);
-		cout << "angleSmallHand: " << angleSmallHand << endl;
+// 		cout << "angleSmallHand: " << angleSmallHand << endl;
 
 		int hour = int(angleSmallHand / 360 * 12);
 		int minute = int(angleBigHand / 360 * 60);
@@ -184,11 +194,14 @@ int main () {
 
 
 		//break with ESC
-		if (cvWaitKey(1) == 27)
+		if (cvWaitKey(1) == VK_ESCAPE)
 			break;
 	}
-
-	capture.release();
+	
+	if (capture_p != 0) {
+		capture_p->release();
+		delete capture_p;
+	}
 	return 0;
 }
 
