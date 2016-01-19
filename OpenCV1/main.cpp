@@ -181,6 +181,8 @@ int main (int argc, char* argv[]) {
 			drawContours(contoursImg, contours, i, color, 2, 8, noArray());
 		}
 
+		if (contourHandBig != -1 && contourHandSmall != -1){
+
 		float angleBigHand = angleBetweenLinesInRadians(
 			masscenter[contourCircle], masscenter[contourTriangle],
 			masscenter[contourCircle], masscenter[contourHandBig]
@@ -199,7 +201,7 @@ int main (int argc, char* argv[]) {
 		ostringstream text;
 		text << hour << ":" << minute;
 		putText(contoursImg, text.str(), Point(40, 40), FONT_HERSHEY_PLAIN, 2, Scalar(255,255,255), 1, 8, false);
-
+		}
 
 		imshow("contours", contoursImg);
 
