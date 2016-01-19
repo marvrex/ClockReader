@@ -66,11 +66,11 @@ int main (int argc, char* argv[]) {
 		// apply binary threshold
 		threshold(blueImg, blueImg, thresholdBlue, 255, CV_THRESH_BINARY);
 
-		// opening
-		opening(blueImg);
-
-		// closing
+		// opening (which is a closing for the other color)
 		closing(blueImg);
+
+		// closing (closing black = opening white)
+		opening(blueImg);
 		
 		// show input images
 		imshow("blue", blueImg);
@@ -85,7 +85,9 @@ int main (int argc, char* argv[]) {
 		findContours(blueImg, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_NONE);
 		Mat contoursImg = Mat::zeros(blueImg.size(), CV_8UC3);
 
-		if (contours.size() == 0) {
+		// there must be at least two contours for a working clock reading
+		// -> and even more if it's not 12:00
+		if (contours.size() < 2) {
 			if (cvWaitKey(1) == VK_ESCAPE)
 				break;
 			continue;
@@ -133,19 +135,20 @@ int main (int argc, char* argv[]) {
 		// the two biggest contours are most likely the hands of the clock
 		if (childContours.size() > 0)
 			contourHandBig = childContours[childContours.size()-1];
-		else
-			// there must be at least one (actually two if you count the center?) contours inside
-			cout << "not a clock" << endl;
 		
 		if (childContours.size() > 1)
 			contourHandSmall = childContours[childContours.size()-2];
+		else
+			// there is only one child contour
+			contourHandSmall = contourHandBig; // 12:00
 		
 		// the contour that is farther from the center of the circle than the big hand of the clock has to be the triangle. If there is no such contour then the big hand shadows the triangle
-		if (childContours.size() > 2) {
+		if (childContours.size() > 1) {
 			Point2f centerCircle = masscenter[contourCircle];
 			Point2f centerBig = masscenter[contourHandBig];
 			double distBig = norm(centerCircle - centerBig);
-			for (int i = 0; i < childContours.size()-2; i++) {
+			// the triangle is one of the three biggest child contours
+			for (int i = childContours.size()-2; i >= 0 && i >= childContours.size()-3; i--) {
 				Point2f center = masscenter[childContours[i]];
 				float dist = norm(center - centerCircle);
 				if (dist > distBig) {
@@ -156,6 +159,9 @@ int main (int argc, char* argv[]) {
 		// no contour is farther from the center than the big hand
 		if (contourTriangle == -1)
 			contourTriangle = contourHandBig;
+		// if the second largest contour is also the farthest contour
+		else if (contourTriangle == contourHandSmall) // 13:05, 14:10, ...
+			contourHandSmall = contourHandBig;
 
 		// draw the contours of the clock
 		for (int i= 0; i < contours.size(); i++) {
