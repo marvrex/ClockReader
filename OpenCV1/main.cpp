@@ -148,9 +148,12 @@ int main (int argc, char* argv[]) {
 			Point2f centerBig = masscenter[contourHandBig];
 			double distBig = norm(centerCircle - centerBig);
 			// the triangle is one of the three biggest child contours
-			for (int i = childContours.size()-2; i >= 0 && i >= childContours.size()-3; i--) {
+			int start = childContours.size()-3;
+			if (start < 0)
+				start = 0;
+			for (int i = start; i < childContours.size()-1; i++) {
 				Point2f center = masscenter[childContours[i]];
-				float dist = norm(center - centerCircle);
+				double dist = norm(centerCircle - center);
 				if (dist > distBig) {
 					contourTriangle = childContours[i];
 				}
@@ -170,7 +173,9 @@ int main (int argc, char* argv[]) {
 				color = Scalar(255,0,0);
 			else if (i == contourTriangle)
 				color = Scalar(0,255,0);
-			else if (i == contourHandBig || i == contourHandSmall)
+			else if (i == contourHandSmall)
+				color = Scalar(0,180,180);
+			else if (i == contourHandBig)
 				color = Scalar(0,0,255);
 
 			drawContours(contoursImg, contours, i, color, 2, 8, noArray());
